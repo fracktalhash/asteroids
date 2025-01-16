@@ -1,14 +1,34 @@
-import sys
 import pygame
+import sys
+import time
 from constants import *
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from player import Player
 from shot import Shot
+from game_over import *
+
+def reset_game(player, asteroids, shots, asteroid_field, updatables, drawables):
+    global game_over
+
+    player.position = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    player.velocity = pygame.Vector2(0, 0)
+    player.rotation = 0
+    player.rate_limit = 0
+
+    updatables.empty()
+    drawables.empty()
+    asteroids.empty()
+    shots.empty()
+
+    asteroid_field = AsteroidField()
+
+    updatables.add(player)
+    drawables.add(player)
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
+    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     clock = pygame.time.Clock()
 
     updatables = pygame.sprite.Group()
@@ -26,31 +46,51 @@ def main():
 
     dt = 0
 
+    game_over = False
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
-            
-        for updatable in updatables:
-            updatable.update(dt)
-
-        for asteroid in asteroids:
-            if asteroid.collides_with(player):
-                print("Game Over!")
+                pygame.quit()
                 sys.exit()
-            for shot in shots:
-                if asteroid.collides_with(shot):
-                    shot.kill()
-                    asteroid.split()
+
+        if game_over:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_r]:  # Restart the game when space is pressed
+                reset_game(player, asteroids, shots, asteroid_field, updatables, drawables)  # Reset game state
+                game_over = False
+            if keys[pygame.K_q]:
+                sys.exit()
+
+        if not game_over:
+            # Update all objects in the game
+            for updatable in updatables:
+                updatable.update(dt)
+
+            # Check for collisions
+            for asteroid in asteroids:
+                if asteroid.collides_with(player):
+                    player.kill()  # Kill player, trigger game over
+                    game_over = True
+
+                for shot in shots:
+                    if asteroid.collides_with(shot):
+                        shot.kill()
+                        asteroid.split()
 
         screen.fill("black")
 
+        # Draw all sprites
         for drawable in drawables:
-            drawable.draw(screen) #draw player
+            drawable.draw(screen)
 
-        pygame.display.flip()
+        if game_over:
+            display_game_over_screen(screen)
 
-        dt = clock.tick(60)/1000 #frame rate 60fps
+        pygame.display.flip()  # Update the display
+
+        # Control the frame rate
+        dt = clock.tick(60) / 1000  # 60fps
 
 if __name__ == "__main__":
     main()

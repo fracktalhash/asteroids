@@ -104,9 +104,9 @@ To run the project locally, follow these steps:
 &nbsp;
 ## **Future-enhancements**
 
-- [ ] Add "Game Over!" screen  
+- [X] Add "Game Over!" screen  
+- [X] Add restart button for "Game Over!" screen
 - [ ] Draw random smaler cirlces white fill to make asteroids look cooler
-- [ ] Add start button for "Game Over!" screen
 
 ---
 &nbsp;
